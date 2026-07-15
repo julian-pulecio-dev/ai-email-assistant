@@ -8,7 +8,7 @@ resource "aws_apigatewayv2_api" "this" {
 
   cors_configuration {
     allow_origins = var.allowed_origins
-    allow_methods = ["GET", "POST", "OPTIONS"]
+    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     allow_headers = ["Content-Type", "Authorization"]
     max_age       = 300
   }
@@ -117,6 +117,57 @@ resource "aws_lambda_permission" "gmail_messages_invoke" {
   statement_id  = "AllowAPIGatewayInvokeGmailMessages"
   action        = "lambda:InvokeFunction"
   function_name = var.gmail_messages_function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
+}
+
+# ---------------------------------------------------------------------------
+# /labels CRUD (protected) - GET/POST /labels, PUT/DELETE /labels/{label_id}
+# ---------------------------------------------------------------------------
+
+resource "aws_apigatewayv2_integration" "labels" {
+  api_id                 = aws_apigatewayv2_api.this.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = var.labels_invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "labels_list" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "GET /labels"
+  target             = "integrations/${aws_apigatewayv2_integration.labels.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.session.id
+}
+
+resource "aws_apigatewayv2_route" "labels_create" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "POST /labels"
+  target             = "integrations/${aws_apigatewayv2_integration.labels.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.session.id
+}
+
+resource "aws_apigatewayv2_route" "labels_update" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "PUT /labels/{label_id}"
+  target             = "integrations/${aws_apigatewayv2_integration.labels.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.session.id
+}
+
+resource "aws_apigatewayv2_route" "labels_delete" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "DELETE /labels/{label_id}"
+  target             = "integrations/${aws_apigatewayv2_integration.labels.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.session.id
+}
+
+resource "aws_lambda_permission" "labels_invoke" {
+  statement_id  = "AllowAPIGatewayInvokeLabels"
+  action        = "lambda:InvokeFunction"
+  function_name = var.labels_function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
 }

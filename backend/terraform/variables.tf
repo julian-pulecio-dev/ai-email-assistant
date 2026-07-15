@@ -37,3 +37,21 @@ variable "lambda_runtime" {
   type        = string
   default     = "python3.12"
 }
+
+variable "gmail_history_check_schedule_expression" {
+  description = "EventBridge schedule expression controlling how often the mailbox history check runs."
+  type        = string
+  default     = "rate(5 minutes)"
+}
+
+variable "bedrock_model_id" {
+  description = "Bedrock foundation model id used to classify emails (and their attachments) against the user's defined labels. Must support multimodal input - Nova Micro is text-only."
+  type        = string
+  default     = "amazon.nova-lite-v1:0"
+}
+
+variable "alert_email" {
+  description = "Email address notified when a process_new_email execution fails. Leave empty to skip the subscription (you'll still see failures in CloudWatch)."
+  type        = string
+  default     = ""
+}

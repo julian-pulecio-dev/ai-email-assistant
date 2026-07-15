@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { fetchGmailMessages, type GmailMessage } from "../api/client";
+import { LabelsManager } from "../components/LabelsManager";
 import { useAuth } from "../context/AuthContext";
 
 export function Dashboard() {
@@ -58,6 +59,10 @@ export function Dashboard() {
           ))}
         </ul>
       )}
+
+      <hr style={{ width: "100%" }} />
+
+      <LabelsManager />
     </div>
   );
 }

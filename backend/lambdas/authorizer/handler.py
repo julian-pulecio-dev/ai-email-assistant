@@ -4,9 +4,13 @@ Validates the `Authorization: Bearer <session JWT>` header issued by
 POST /auth/google and forwards the decoded claims to downstream handlers via
 the authorizer context.
 """
+import logging
+
 import jwt
 
 import common
+
+logger = logging.getLogger(__name__)
 
 SESSION_JWT_SECRET_NAME = common.env("SESSION_JWT_SECRET_NAME")
 
@@ -16,6 +20,7 @@ def handler(event, _context):
     auth_header = headers.get("authorization") or headers.get("Authorization") or ""
 
     if not auth_header.lower().startswith("bearer "):
+        logger.info("Rejecting request: missing/malformed Authorization header")
         return {"isAuthorized": False}
 
     token = auth_header.split(" ", 1)[1].strip()
@@ -23,9 +28,11 @@ def handler(event, _context):
 
     try:
         claims = common.decode_session_jwt(token, jwt_secret)
-    except jwt.PyJWTError:
+    except jwt.PyJWTError as exc:
+        logger.info("Rejecting request: invalid session token (%s)", exc)
         return {"isAuthorized": False}
 
+    logger.info("Authorized user_id=%s", claims["sub"])
     return {
         "isAuthorized": True,
         "context": {"user_id": claims["sub"], "email": claims.get("email", "")},

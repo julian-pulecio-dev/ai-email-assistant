@@ -41,3 +41,11 @@ variable "gmail_messages_function_name" {
 variable "gmail_messages_invoke_arn" {
   type = string
 }
+
+variable "labels_function_name" {
+  type = string
+}
+
+variable "labels_invoke_arn" {
+  type = string
+}
