@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars and fill in real values. terraform.tfvars is
+# gitignored - never commit real values.
+
+project_name              = "google-auth-app"
+environment                = "dev"
+google_oauth_secret_name  = "google-oauth/credentials"
+allowed_origins            = ["http://localhost:5173"]
+session_jwt_ttl_minutes    = 60
